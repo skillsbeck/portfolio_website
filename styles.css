@@ -1,0 +1,72 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+header {
+    background: #002147;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    background: #004080;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 15px;
+    display: inline-block;
+}
+
+nav ul li a:hover {
+    background: #0056b3;
+    border-radius: 5px;
+}
+
+section {
+    width: 80%;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0px 0px 10px 0px #aaa;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #002147;
+    color: white;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.powerbi-placeholder {
+    width: 100%;
+    height: 300px;
+    background: #ddd;
+    text-align: center;
+    line-height: 300px;
+    font-weight: bold;
+    color: #666;
+    border: 2px dashed #bbb;
+    border-radius: 5px;
+}

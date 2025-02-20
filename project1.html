@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Insurance Claim Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Health Insurance Claim Analysis</h1>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="project2.html">Next Project →</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="project-details">
+        <h2>1. Business Requirement</h2>
+        <p>The goal of this project is to analyze health insurance claim data to identify patterns in claim approvals and denials.</p>
+        <ul>
+            <li>Understanding factors affecting claim approval rates.</li>
+            <li>Identifying fraudulent or suspicious claims.</li>
+            <li>Determining the average claim amount and processing time.</li>
+            <li>Improving claim processing efficiency.</li>
+        </ul>
+    </section>
+
+    <section class="data-exploration">
+        <h2>2. Data Exploration</h2>
+        <p>The dataset contains 1,000 rows and 16 columns related to health insurance claims. Key columns include:</p>
+        <ul>
+            <li><strong>Claim ID, Provider ID, Patient ID:</strong> Unique Identifiers.</li>
+            <li><strong>Date of Service:</strong> Time of Claim.</li>
+            <li><strong>Billed Amount, Allowed Amount, Paid Amount:</strong> Financial Details.</li>
+            <li><strong>Claim Status:</strong> Paid, Denied, Under Review.</li>
+            <li><strong>Reason Code, Follow-up Required, AR Status, Outcome:</strong> Claim Resolution Details.</li>
+        </ul>
+
+        <h3>SQL Data Exploration</h3>
+        <h4>We can use SQL to explore the data and find out basic information.</h4>
+        <pre>
+-- Check basic structure and first few rows
+SELECT * FROM claim_data LIMIT 5;
+
+-- Count distinct providers
+SELECT COUNT(DISTINCT Provider_ID) AS Unique_Providers FROM claim_data;
+
+-- Claim status distribution
+SELECT Claim_Status, COUNT(*) AS Claim_Count
+FROM claim_data
+GROUP BY Claim_Status;
+
+-- Average billed amount by insurance type
+SELECT Insurance_Type, AVG(Billed_Amount) AS Avg_Billed
+FROM claim_data
+GROUP BY Insurance_Type;
+
+-- Top 5 providers with the highest total billed amount
+SELECT Provider_Name, SUM(Billed_Amount) AS Total_Billed
+FROM claim_data
+GROUP BY Provider_Name
+ORDER BY Total_Billed DESC
+LIMIT 5;
+        </pre>
+    </section>
+
+    <section class="questions-assumptions">
+        <h2>3. Questions and Assumptions</h2>
+        <h3>We can state our assumptions and note key questions we may want to explore.</h3>
+        <h3>Key Questions</h3>
+        <ul>
+            <li>What is the percentage of denied claims, and what are the common reasons?</li>
+            <li>Do certain providers have a higher claim denial rate?</li>
+            <li>How does insurance type affect claim approval rates?</li>
+            <li>What is the correlation between billed amount and paid amount?</li>
+        </ul>
+
+        <h3>Assumptions</h3>
+        <ul>
+            <li>Data is complete and does not have missing values affecting results.</li>
+            <li>All monetary values are in the same currency.</li>
+            <li>Dates are accurate and formatted correctly.</li>
+        </ul>
+    </section>
+
+    <section class="powerbi-dashboard">
+        <h2>4. Power BI Dashboard Development</h2>
+        <p>The Power BI dashboard will contain:</p>
+        <ul>
+            <li><strong>KPIs:</strong> Total Claims, Denial Rate, Average Paid Amount.</li>
+            <li><strong>Visuals:</strong></li>
+            <ul>
+                <li>Pie Chart: Claim Status Breakdown.</li>
+                <li>Bar Chart: Denial Reasons by Frequency.</li>
+                <li>Heatmap: Claim Approval by Provider.</li>
+                <li>Table: Top Providers by Claim Volume.</li>
+            </ul>
+        </ul>
+
+        <h3>Steps to Build Dashboard</h3>
+        <ul>
+            <li>Load the Data into Power BI.</li>
+            <li>Transform Data:
+                <ul>
+                    <li>Convert "Date of Service" to Date format.</li>
+                    <li>Create calculated columns for Claim Approval Rate, Claim Denial Rate, etc.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Key DAX Measures</h3>
+        <pre>
+Total Claims = COUNT('claim_data'[Claim ID])
+
+Denial Rate = DIVIDE(COUNTROWS(FILTER('claim_data', 'claim_data'[Claim Status] = "Denied")), [Total Claims], 0)
+
+Avg Paid Amount = AVERAGE('claim_data'[Paid Amount])
+        </pre>
+
+        <h3>Advanced DAX</h3>
+        <pre>
+Claim Approval Rate = 
+VAR Approved = COUNTROWS(FILTER('claim_data', 'claim_data'[Claim Status] = "Paid"))
+VAR Total = COUNTROWS('claim_data')
+RETURN DIVIDE(Approved, Total, 0)
+        </pre>
+
+        <div></div> <img src="images/Screenshot 2025-02-10 131759.png"></div>
+        <h2>5. Findings</h2>
+        <ul>
+            <li>Incorrect billing information is the most common denial reason.</li>
+            <li>Authorization not obtained is the second most common denial reason.</li>
+            <li>Claim status is evenly distributed among the 1,000 claim sample. This is synthetic data, so that makes sense.</li>
+            <li>Medicare has the highest denial rate of all insurance types.</li>
+            <li>Provider 8 has the highest claim denial rate along with one of the highest amount of total claims.</li>
+        </ul>
+
+        <h2>6. Next Steps</h2>
+        <ul>
+            <li>Deep dive into claims billing information and find out if there is a trend or if only specific providers are having this issue. </li>
+            <li>Look at Medicare claims and providers to find out more information as to why they deny claims more often. </li>
+            <li>Analyze Provider 8 to find out more about their denials. </li>
+        </ul>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 My Data Portfolio | <a href="index.html">Back to Home</a></p>
+    </footer>
+</body>
+</html>

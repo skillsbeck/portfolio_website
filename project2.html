@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breast Cancer Data Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Breast Cancer Data Analysis</h1>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="project3.html">Next Project →</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="project-details">
+        <h2>1. Business Requirement</h2>
+        <p>The goal of this project is to analyze breast cancer data to:</p>
+        <ul>
+            <li>Identify trends in cancer diagnosis.</li>
+            <li>Determine correlations between different features and cancer severity.</li>
+            <li>Provide insights into patient demographics and medical test results.</li>
+        </ul>
+        <p>This analysis can help healthcare professionals and researchers understand risk factors and improve early detection strategies.</p>
+    </section>
+
+    <section class="data-exploration">
+        <h2>2. Data Exploration</h2>
+        <p>The dataset consists of 286 records with 10 columns related to breast cancer diagnoses and patient demographics. Key features include:</p>
+        <ul>
+            <li><strong>target:</strong> Indicates recurrence or no-recurrence of cancer.</li>
+            <li><strong>age:</strong> Age group of the patient.</li>
+            <li><strong>menopause:</strong> Menopausal status (pre or post).</li>
+            <li><strong>tumor_size:</strong> Size of the tumor in mm.</li>
+            <li><strong>inv_nodes:</strong> Number of affected lymph nodes.</li>
+            <li><strong>node_caps:</strong> Whether cancer has spread to lymph node capsules.</li>
+            <li><strong>deg_malig:</strong> Degree of malignancy (integer scale).</li>
+            <li><strong>breast:</strong> Affected breast (left or right).</li>
+            <li><strong>breast_quad:</strong> Quadrant of the breast where cancer is located.</li>
+            <li><strong>irradiat:</strong> Whether radiation therapy was received.</li>
+        </ul>
+
+        <h3>Python Data Exploration</h3>
+        <pre>
+import pandas as pd
+df = pd.read_csv("breast-cancer.csv")
+print(df.info())
+print(df.head())
+        </pre>
+
+        <h3>SQL Data Exploration</h3>
+        <pre>
+-- Check unique values for target variable
+SELECT target, COUNT(*) AS Count FROM breast_cancer_data GROUP BY target;
+
+-- Distribution of tumor sizes
+SELECT tumor_size, COUNT(*) AS Count FROM breast_cancer_data GROUP BY tumor_size ORDER BY Count DESC;
+
+-- Average malignancy by tumor size
+SELECT tumor_size, AVG(deg_malig) AS Avg_Malignancy
+FROM breast_cancer_data
+GROUP BY tumor_size
+ORDER BY Avg_Malignancy DESC;
+
+-- Patients who received irradiation vs. recurrence
+SELECT irradiat, target, COUNT(*) AS Count
+FROM breast_cancer_data
+GROUP BY irradiat, target;
+
+-- Most affected age group
+SELECT age, COUNT(*) AS Count FROM breast_cancer_data GROUP BY age ORDER BY Count DESC;
+        </pre>
+    </section>
+
+    <section class="questions-assumptions">
+        <h2>3. Questions and Assumptions</h2>
+        <h3>Key Questions</h3>
+        <ul>
+            <li>What percentage of patients had cancer recurrence?</li>
+            <li>Does tumor size correlate with malignancy?</li>
+            <li>Are younger or older patients more prone to recurrence?</li>
+            <li>How does menopause status affect recurrence rates?</li>
+            <li>Does receiving irradiation reduce recurrence probability?</li>
+        </ul>
+
+        <h3>Assumptions</h3>
+        <ul>
+            <li>The dataset is representative of the population.</li>
+            <li>Tumor size and malignancy degree are accurately measured.</li>
+            <li>Patients receiving irradiation followed similar treatment protocols.</li>
+        </ul>
+    </section>
+
+    <section class="powerbi-dashboard">
+        <h2>4. Power BI Dashboard Development</h2>
+        <p>The dashboard will include:</p>
+        <ul>
+            <li><strong>KPIs:</strong> Percentage of recurrence cases, Average Malignancy Score.</li>
+            <li><strong>Visuals:</strong></li>
+            <ul>
+                <li>Bar Chart: Recurrence vs. Non-recurrence.</li>
+                <li>Alternative to Heatmap: Scatter Plot for Malignancy vs. Tumor Size.</li>
+                <li>Line Chart: Recurrence by Age Group.</li>
+                <li>Pie Chart: Impact of Irradiation.</li>
+            </ul>
+        </ul>
+
+        <h3>Steps to Build Dashboard</h3>
+        <ul>
+            <li>Load Data into Power BI.</li>
+            <li>Transform Data:
+                <ul>
+                    <li>Convert categorical variables (yes/no) into binary values.</li>
+                    <li>Create calculated columns for risk categories.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Key DAX Measures</h3>
+        <pre>
+Total Patients = COUNT('breast_cancer_data'[target])
+
+Recurrence Rate = DIVIDE(COUNTROWS(FILTER('breast_cancer_data', 'breast_cancer_data'[target] = "recurrence-events")), [Total Patients], 0)
+
+Avg Malignancy = AVERAGE('breast_cancer_data'[deg_malig])
+        </pre>
+
+        <h3>Advanced DAX</h3>
+        <pre>
+Recurrence by Age = 
+VAR Recurrence = COUNTROWS(FILTER('breast_cancer_data', 'breast_cancer_data'[target] = "recurrence-events"))
+VAR Total = COUNTROWS('breast_cancer_data')
+RETURN DIVIDE(Recurrence, Total, 0)
+        </pre>
+
+        <div> <img src = images/breast_cancer_dash.png></div>
+
+        <h3>Findings</h3>
+        <ul>
+            <li>*Note: This is fake data so the findings may not make sense in real life. </li>
+            <li>Tumor size has a direct correlation with malignancy - the bigger the tumor size the more maligant it is. </li>
+            <li>Recurrence events are less between ages 40 - 60. </li>
+        </ul>
+
+    </section>
+
+    <footer>
+        <p>&copy; 2025 My Data Portfolio | <a href="index.html">Back to Home</a></p>
+    </footer>
+</body>
+</html>
