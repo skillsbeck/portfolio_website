@@ -129,6 +129,45 @@ RETURN DIVIDE(Approved, Total, 0)
         </pre>
 
         <div></div> <img src="images/Screenshot 2025-02-10 131759.png"></div>
+
+        <h2>Claim Trends over Time: Time Intelligence</h2>
+        <p>We can create Time Intelligence DAX to track trends using a Date Table linked to the Date of Service field in the claims dataset.</p>
+        <p>Date tables can be created using DAX or m code. In this scenario, I am using DAX. </p>
+        <pre>DateTable = 
+            ADDCOLUMNS(
+                CALENDAR(FIRSTDATE(claim_data[Date of Service]),LASTDATE(claim_data[Date of Service])),  // Adjust start date as needed
+                
+                "Month Name", FORMAT([Date], "MMM"),
+                "Month Year", FORMAT([Date], "MMM YYYY"),
+                "Month Number", MONTH([Date]),
+                "Quarter", "Q" & FORMAT([Date], "Q")
+            )
+        </pre>
+        <p>We can look at claim status over time by looking at Month & Year for total claims, approved claims, and denied claims.</p>
+        <div></div> <img src="images/claimsovertime.png"></div>
+        <p>We can also identify trends by looking at the 3 month rolling total claims. We can also modify this to look at the previous 12 months for trends. For this calculation to work, a current date needs to be chosen. I added a date filter so the calculation knows when to start the 3 month period.</p>
+        <pre>Rolling 3-Month Claims = 
+            VAR MaxDate = MAX('DateTable'[Date]) 
+            RETURN 
+            CALCULATE(
+                [Total Claims], 
+                DATESINPERIOD('DateTable'[Date], MaxDate, -3, MONTH)
+            )</pre>
+            <div></div> <img src="images/rolling3monthclaims.png"></div>
+            <p>Month over Month is another common KPI we can look at.</p>
+            <pre>MoM Claims % Change = 
+                VAR PrevMonth =
+                    CALCULATE(
+                        [Total Claims], 
+                        PREVIOUSMONTH('DateTable'[Date])
+                    )
+                RETURN
+                    IF(
+                        NOT ISBLANK(PrevMonth), 
+                        DIVIDE([Total Claims] - PrevMonth, PrevMonth, BLANK()), 
+                        BLANK()
+                    )</pre>
+
         <h2>5. Findings</h2>
         <ul>
             <li>Incorrect billing information is the most common denial reason.</li>
