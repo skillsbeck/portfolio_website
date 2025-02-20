@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoe Sales Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Breast Cancer Data Analysis</h1>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="project3.html">Next Project →</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="project-details">
+        <h2>1. Business Requirement</h2>
+        <p>The goal of this project is to analyze shoe sales data to:</p>
+        <ul>
+            <li>Identify best-selling shoes and popular categories</li>
+            <li>Track price trends and availability across different countries.</li>
+            <li>Determine the impact of gender and shoe color on sales.</li>
+            <li>Optimize inventory by analyzing demand across regions.</li>
+        </ul>
+        <p>This analysis will help a retail business make data-driven decisions for pricing, marketing, and inventory management.</p>
+    </section>
+
+    <section class="data-exploration">
+        <h2>2. Data Exploration</h2>
+        <p>The dataset consists of 286 records with 10 columns related to breast cancer diagnoses and patient demographics. Key features include:</p>
+        <ul>
+            <li><strong>country_dim.csv</strong> Contains country_code, currency, and shoe_metric</li>
+            <li><strong>shoes_dim.csv</strong> Contains id, name, best_for_wear, gender, image_url, and colors</li>
+            <li><strong>shoes_fact.csv</strong> Contains id, price, category, size, availability, date, and country_code</li>
+        </ul>
+
+
+        <h3>SQL Data Exploration</h3>
+        <pre>
+            -- Count total sales transactions
+            SELECT COUNT(*) AS Total_Transactions FROM shoes_fact;
+            
+            -- Find the top-selling shoe models
+            SELECT s.name, COUNT(f.id) AS Sales_Count
+            FROM shoes_fact f
+            JOIN shoes_dim s ON f.id = s.id
+            WHERE f.availability > 0
+            GROUP BY s.name
+            ORDER BY Sales_Count DESC
+            LIMIT 10;
+            
+            -- Average price per category
+            SELECT category, AVG(price) AS Avg_Price
+            FROM shoes_fact
+            GROUP BY category;
+            
+            -- Availability of shoes by country
+            SELECT c.country_code, SUM(f.availability) AS Total_Stock
+            FROM shoes_fact f
+            JOIN country_dim c ON f.country_code = c.country_code
+            GROUP BY c.country_code;
+            
+            -- Price trends over time
+            SELECT date, AVG(price) AS Avg_Price
+            FROM shoes_fact
+            GROUP BY date
+            ORDER BY date;
+            
+        </pre>
+    </section>
+
+    <section class="questions-assumptions">
+        <h2>3. Questions and Assumptions</h2>
+        <h3>Key Questions</h3>
+        <ul>
+            <li>Which shoe models are the most popular?</li>
+            <li>How do sales vary across different countries?</li>
+            <li>Are younger or older patients more prone to recurrence?</li>
+            <li>What is the average price trend over time?</li>
+            <li>How does shoe availability impact sales?</li>
+        </ul>
+
+        <h3>Assumptions</h3>
+        <ul>
+            <li>Prices remain stable unless updated in the dataset.</li>
+            <li>Availability indicates stock levels, but sales volume isn't explicitly recorded. We will use availabity as sales for the sake of analysis examples.</li>
+            <li>The dataset covers a complete sales period without missing transactions.</li>
+        </ul>
+    </section>
+
+    <section class="powerbi-dashboard">
+        <h2>4. Power BI Dashboard Development</h2>
+        <p>The dashboard will include:</p>
+        <ul>
+            <li><strong>KPIs:</strong> Total Sales, Average Shoe Price, Best-Selling Category.</li>
+            <li><strong>Visuals:</strong></li>
+            <ul>
+                <li>Bar Chart: Top Selling Shoes</li>
+                <li>Line Chart: Price Trends Over Time</li>
+                <li>Bar Chart: Availability by Country</li>
+                <li>Pie Chart: Shoe Category Distribution</li>
+            </ul>
+        </ul>
+
+        <h3>Steps to Build Dashboard</h3>
+        <ul>
+            <li>Load Data into Power BI.</li>
+            <li>Transform Data:
+                <ul>
+                    <li>Promote first row as headers.</li>
+                    <li>Create a date_dim table using m code. There is an issue with the date field in shoes_fact - some of the dates are formated dd/mm/yyyy and some are mm/dd/yyyy. I would go back to the data source to get it fixed for consistency. In this example, I replaced the dd/mm/yyyy with a 01/01/1999 for simplicity.</li>
+                    <pre>let
+                        // Ensure shoes_fact table is already loaded in Power Query
+                        Source = shoes_fact,
+                    
+                        // Convert 'date' column to Date type (fixing format issues)
+                        ShoesFactTable = Table.TransformColumnTypes(Source, {{"date", type date}}),
+                    
+                        // Get Min and Max Date from shoes_fact table
+                        StartDate = List.Min(ShoesFactTable[date]),  
+                        EndDate = List.Max(ShoesFactTable[date]),  
+                    
+                        // Generate Date List from Min to Max Date
+                        DateList = List.Dates(StartDate, Number.From(EndDate - StartDate) + 1, #duration(1, 0, 0, 0)),
+                        TableFromList = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}),
+                        ChangedType = Table.TransformColumnTypes(TableFromList,{{"Date", type date}}),
+                        
+                        // Additional Date Columns
+                        YearColumn = Table.AddColumn(ChangedType, "Year", each Date.Year([Date]), Int64.Type),
+                        MonthColumn = Table.AddColumn(YearColumn, "Month", each Date.Month([Date]), Int64.Type),
+                        MonthName = Table.AddColumn(MonthColumn, "Month Name", each Date.ToText([Date], "MMMM"), type text),
+                        QuarterColumn = Table.AddColumn(MonthName, "Quarter", each "Q" & Number.ToText(Date.QuarterOfYear([Date])), type text),
+                        WeekColumn = Table.AddColumn(QuarterColumn, "Week of Year", each Date.WeekOfYear([Date]), Int64.Type),
+                        DayOfWeekColumn = Table.AddColumn(WeekColumn, "Day of Week", each Date.DayOfWeek([Date]) + 1, Int64.Type),
+                        DayOfWeekName = Table.AddColumn(DayOfWeekColumn, "Day Name", each Date.ToText([Date], "dddd"), type text),
+                        
+                        // New Column: Month-Year (e.g., "Jan 2023")
+                        MonthYearColumn = Table.AddColumn(DayOfWeekName, "Month-Year", each Date.ToText([Date], "MMM yyyy"), type text)
+                    
+                    in
+                        MonthYearColumn</pre>
+                    <li> <div> <img src = images/model></div></li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Key DAX Measures</h3>
+        <pre>
+            Total Sales = SUM('shoes_fact'[availability])
+            Avg Shoe Price = AVERAGE('shoes_fact'[price])
+        </pre>
+
+        <h3>Advanced DAX</h3>
+        <pre>
+            Sales by Category = 
+            SUMX(
+                SUMMARIZE('shoes_fact', 'shoes_fact'[category], "TotalSales", SUM('shoes_fact'[availability])),
+                [TotalSales]
+            )
+        </pre>
+
+        <div> <img src = images/sneakers></div>
+
+        <h3>Findings</h3>
+        <ul>
+            <li>*Note: This is fake data so the findings may not make sense in real life. </li>
+            <li>Tumor size has a direct correlation with malignancy - the bigger the tumor size the more maligant it is. </li>
+            <li>Recurrence events are less between ages 40 - 60. </li>
+        </ul>
+
+    </section>
+
+    <footer>
+        <p>&copy; 2025 My Data Portfolio | <a href="index.html">Back to Home</a></p>
+    </footer>
+</body>
+</html>
